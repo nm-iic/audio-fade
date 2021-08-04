@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Fade</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .backdrop {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        color: white;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+
+        z-index: 3;
+      }
+
+      input {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="backdrop" v-if="!started" v-on:click="start">
+        Click to Start
+      </div>
+
+      <audio src="./sample.mp3" loop controls></audio>
+      <hr />
+      <input
+        type="range"
+        v-model="volume"
+        min="0"
+        max="2"
+        step="0.01"
+        v-on:input="setGain"
+      />
+    </div>
+
+    <script>
+      const app = new Vue({
+        el: "#app",
+        data: {
+          started: false,
+          volume: 1,
+          audioContext: null,
+          track: null,
+          gainNode: null,
+        },
+        methods: {
+          start() {
+            this.started = true;
+            const audioElement = document.querySelector("audio");
+            audioElement.play();
+            this.audioContext = new AudioContext();
+            this.track =
+              this.audioContext.createMediaElementSource(audioElement);
+            this.gainNode = this.audioContext.createGain();
+            this.setGain();
+            this.track
+              .connect(this.gainNode)
+              .connect(this.audioContext.destination);
+          },
+          setGain() {
+            this.gainNode.gain.value = this.volume;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
